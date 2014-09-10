@@ -17,8 +17,8 @@ app.set('view engine', 'ejs');
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-//app.use(bodyParser.json());   TODO switsched-off for proxy
-//app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());   
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -48,14 +48,7 @@ app.use(function(err, req, res, next) {
 	});
 });
 
-// use for proxy to back-end
-var httpProxy = require('http-proxy');
-var proxy = httpProxy.createProxyServer();
-app.all('/webapps/*', function(req, res) {
-	proxy.web(req, res, {
-		target : 'http://hades:9090'
-	});
-});
+
 
 //catch 404 and forward to error handler - must be the last entry of routes!
 app.use(function(req, res, next) {

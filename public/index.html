@@ -20,7 +20,9 @@
 			'jquery' : 'bower_components/jquery/dist/jquery',
 			'bootstrap' : 'bower_components/bootstrap/dist/js/bootstrap.min',
 			'underscore': 'bower_components/underscore/underscore',
-			'backbone': 'bower_components/backbone/backbone'
+			'backbone': 'bower_components/backbone/backbone',
+			'modernizr': 'bower_components/modernizr/modernizr',
+			'getusermedia':'bower_components/modernizr/feature-detects/getusermedia'
 		},
 		shim : {
 			'backbone' : {
@@ -32,6 +34,9 @@
 			},
 			'bootstrap' : {
 				deps : ['jquery']
+			},
+			'getusermedia':{
+				deps: ['modernizr']
 			}
 		},
 		map : {
@@ -45,12 +50,63 @@
 </head>
 <body>
 	
+<video autoplay></video>
+<img src="">
+<canvas style="display:none;"></canvas>
 
 </body>
 <script type="text/javascript">
-	require(['js/PageController', 'backbone', 'bootstrap', 'jquery'],
+	require(['js/PageController', 'backbone', 'bootstrap', 'jquery', 'getusermedia'],
 			function(PageController) {
 				new PageController();
+				
+				var video = document.querySelector('video');
+				var canvas = document.querySelector('canvas');
+				var img = document.querySelector('img');
+				var ctx = canvas.getContext('2d');
+				var mediaStreamReady = undefined;
+				
+				function init(){
+				video.addEventListener('click', snapShot, false);				
+				if(Modernizr.getusermedia){
+					var gUM = Modernizr.prefixed('getUserMedia', navigator);
+					gUM({video:true, audio:false}, function(localMediaStream){						 
+						    video.src = window.URL.createObjectURL(localMediaStream);
+						    mediaStreamReady = true;
+					}, onError);					
+				}
+				}
+				
+				function onError(e){
+					console.error(e);
+					debugger;
+				}
+				
+				function snapShot(){
+					if(!mediaStreamReady){
+						return;
+					}					
+					ctx.drawImage(video, 0, 0);
+					img.src = canvas.toDataURL('image/png');
+				}
+				
+// 				init();
+				
+				window.AudioContext = window.AudioContext ||
+                window.webkitAudioContext;
+
+var context = new AudioContext();
+
+var audioUM = Modernizr.prefixed('getUserMedia', navigator);
+audioUM({audio: true}, function(stream) {
+var microphone = context.createMediaStreamSource(stream);
+var filter = context.createBiquadFilter();
+
+// microphone -> filter -> destination.
+microphone.connect(filter);
+filter.connect(context.destination);
+}, onError);
+				
 			});
 </script>
 </html>
